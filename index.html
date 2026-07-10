@@ -1,0 +1,310 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ZeriqAI – AI Learning Companion</title>
+
+    <!-- PWA: manifest + theme + icons -->
+   <link rel="manifest" href="/manifest.json">
+
+<meta name="theme-color" content="#4f46e5">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ZeriqAI">
+
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  </head>
+  
+<body class="bg-[#F8FAFC]/90 font-sans antialiased relative min-h-screen overflow-x-hidden">
+    <!-- INSTALL OVERLAY -->
+    <div id="install-overlay" class="fixed inset-0 z-[99999] hidden items-center justify-center bg-black/80 backdrop-blur-md" role="dialog" aria-modal="true" aria-labelledby="install-overlay-title">
+
+      <div class="w-[92%] max-w-md rounded-3xl bg-white p-8 shadow-2xl border border-indigo-100 relative">
+
+        <button id="btn-install-dismiss" type="button" aria-label="Close" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+
+        <div class="flex items-center justify-center w-20 h-20 mx-auto rounded-full bg-indigo-100">
+          <span class="text-5xl">📲</span>
+        </div>
+
+        <h2 id="install-overlay-title" class="mt-6 text-2xl font-bold text-center text-indigo-600">
+          Install ZeriqAI
+        </h2>
+
+        <p class="mt-4 text-center text-slate-600">
+          ZeriqAI works best when installed as an app.
+        </p>
+
+        <div class="mt-6 rounded-xl bg-slate-100 p-4 text-sm text-slate-700">
+          Install ZeriqAI for the best experience —
+          faster loading, offline support, and easy access
+          right from your home screen.
+        </div>
+
+        <div class="mt-6 space-y-2 text-sm text-slate-600">
+          <p>1. Open your browser menu (⋮).</p>
+          <p>2. Choose <strong>Install App</strong> or <strong>Add to Home Screen</strong>.</p>
+          <p>3. Click <strong>Install</strong>.</p>
+        </div>
+
+        <button id="btn-install-app" class="mt-8 w-full rounded-xl bg-indigo-600 py-3 text-white font-semibold hover:bg-indigo-700">
+          Install App
+        </button>
+
+        <button id="btn-continue-browser" type="button" class="mt-3 w-full text-center text-sm text-slate-500 hover:text-slate-700 underline-offset-2 hover:underline cursor-pointer">
+          Continue in Browser
+        </button>
+
+        <p id="install-overlay-status" class="mt-5 text-center text-xs text-slate-400">
+          Waiting for application installation...
+        </p>
+
+      </div>
+
+    </div>
+
+    <!-- Glowing background decorative circles for Frosted Glass theme -->
+    <div class="fixed top-[-10%] left-[-15%] w-[60%] h-[60%] rounded-full bg-gradient-to-br from-indigo-400/20 to-blue-300/20 blur-[130px] pointer-events-none z-[-1] animate-pulse" style="animation-duration: 10s;"></div>
+    <div class="fixed bottom-[-10%] right-[-15%] w-[60%] h-[60%] rounded-full bg-gradient-to-tr from-sky-400/20 to-indigo-300/20 blur-[130px] pointer-events-none z-[-1] animate-pulse" style="animation-duration: 15s;"></div>
+
+    <!-- Navigation Bar -->
+    <header id="main-header" class="fixed top-0 left-0 right-0 h-16 bg-white/40 backdrop-blur-md border-b border-white/20 z-50 transition-all shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
+        <!-- Logo and Project Name -->
+        <a href="#" id="nav-logo" class="flex items-center gap-2 group">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-blue-500 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-indigo-100 group-hover:scale-105 transition-transform">
+            Z
+          </div>
+          <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent italic">
+            Zeriq<span class="text-slate-800 font-medium">AI</span>
+          </span>
+        </a>
+
+        <!-- Navigation Links (Dynamic based on auth state) -->
+        <nav id="main-nav" class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+          <a href="#" id="link-home" class="hover:text-indigo-600 transition-colors">Home</a>
+          <a href="#" id="link-courses" class="hover:text-indigo-600 transition-colors hidden auth-required">Courses</a>
+          <a href="#" id="link-tutor" class="hover:text-indigo-600 transition-colors hidden auth-required">AI Tutor</a>
+          <a href="#" id="link-notes" class="hover:text-indigo-600 transition-colors hidden auth-required">Notes</a>
+          <a href="#" id="link-progress" class="hover:text-indigo-600 transition-colors hidden auth-required">Progress</a>
+        </nav>
+
+        <!-- Right Side Actions -->
+        <div id="nav-actions" class="flex items-center gap-4">
+          <button id="btn-nav-action" class="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-lg shadow-indigo-100 hover:shadow-xl transition-all cursor-pointer">
+            Get Started
+          </button>
+          <div id="user-pill" class="hidden items-center gap-3 bg-white/45 backdrop-blur-md border border-white/40 rounded-full py-1.5 pl-3 pr-2.5 shadow-sm">
+            <span id="user-pill-name" class="text-xs font-semibold text-slate-700 max-w-[120px] truncate">Student</span>
+            <button id="btn-logout" class="p-1 hover:bg-slate-100 rounded-full text-slate-500 hover:text-rose-600 transition-colors cursor-pointer" title="Log Out">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-out"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Dynamic Slot -->
+    <main id="app-root" class="min-h-screen pt-16 flex flex-col">
+      <!-- Loading Shell -->
+      <div class="flex-1 flex flex-col items-center justify-center bg-transparent p-6">
+        <div class="w-12 h-12 rounded-full border-4 border-indigo-100 border-t-indigo-600 animate-spin mb-4"></div>
+        <p class="text-sm font-medium text-slate-500">Preparing ZeriqAI Virtual Workspace...</p>
+      </div>
+    </main>
+
+    <!-- Preferences Modal -->
+    <div id="preferences-modal" class="fixed inset-0 bg-slate-900/15 backdrop-blur-md flex items-center justify-center z-50 hidden fade-in">
+      <div class="bg-white/60 backdrop-blur-xl rounded-2xl shadow-xl border border-white/40 max-w-md w-full p-6 mx-4 relative">
+        <button id="btn-close-pref-modal" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-10 h-10 rounded-xl bg-indigo-50/80 border border-indigo-100/50 flex items-center justify-center text-indigo-600 shadow-inner">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sliders-horizontal"><line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/></svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-slate-800">Study Preferences</h3>
+            <p class="text-xs text-slate-500">Customize your personalized AI tutor session</p>
+          </div>
+        </div>
+        <form id="preferences-form" class="space-y-4">
+          <div>
+            <label for="pref-course" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Selected Course</label>
+            <select id="pref-course" class="w-full bg-white/50 border border-slate-200/60 rounded-xl py-2.5 px-3 text-slate-800 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Difficulty Level</label>
+            <div class="grid grid-cols-3 gap-2">
+              <label class="cursor-pointer">
+                <input type="radio" name="difficulty" value="Beginner" checked class="sr-only peer">
+                <div class="border border-slate-200 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:text-indigo-700 rounded-xl py-2 px-3 text-center text-xs font-medium text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
+                  Beginner
+                </div>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="difficulty" value="Intermediate" class="sr-only peer">
+                <div class="border border-slate-200 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:text-indigo-700 rounded-xl py-2 px-3 text-center text-xs font-medium text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
+                  Intermediate
+                </div>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="difficulty" value="Advanced" class="sr-only peer">
+                <div class="border border-slate-200 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:text-indigo-700 rounded-xl py-2 px-3 text-center text-xs font-medium text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
+                  Advanced
+                </div>
+              </label>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Preferred AI Learning Mode</label>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="cursor-pointer">
+                <input type="radio" name="ai-mode" value="Text" checked class="sr-only peer">
+                <div class="border border-slate-200 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:text-indigo-700 rounded-xl py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-square"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  Text Mode
+                </div>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="ai-mode" value="Voice" class="sr-only peer">
+                <div class="border border-slate-200 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:text-indigo-700 rounded-xl py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-volume-2"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                  Voice Mode
+                </div>
+              </label>
+            </div>
+          </div>
+          <div id="pref-voice-wrapper" class="hidden">
+            <label for="pref-voice" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">AI Voice</label>
+            <select id="pref-voice" class="w-full bg-white/50 border border-slate-200/60 rounded-xl py-2.5 px-3 text-slate-800 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+              <option value="Sulafat">Sulafat — Warm</option>
+              <option value="Despina">Despina — Smooth</option>
+              <option value="Algieba">Algieba — Smooth</option>
+              <option value="Achernar">Achernar — Soft</option>
+              <option value="Charon">Charon — Informative</option>
+              <option value="Puck">Puck — Upbeat</option>
+              <option value="Kore">Kore — Firm</option>
+            </select>
+          </div>
+          <button id="btn-save-pref" type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-xl py-2.5 text-sm font-semibold hover:opacity-95 shadow-lg shadow-indigo-100/50 transition-all mt-4 cursor-pointer">
+            Start Personalized Study
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- PWA: register service worker -->
+    <script> 
+      
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/sw.js")
+            .then((reg) => console.log("ZeriqAI SW registered:", reg.scope))
+            .catch((err) => console.error("ZeriqAI SW registration failed:", err));
+        });
+      }
+    </script>
+
+    <!-- PWA: install prompt wiring -->
+    <script>
+      (function () {
+        const overlay = document.getElementById("install-overlay");
+        const installBtn = document.getElementById("btn-install-app");
+        const statusEl = document.getElementById("install-overlay-status");
+        const dismissBtn = document.getElementById("btn-install-dismiss");
+        const continueBtn = document.getElementById("btn-continue-browser");
+
+        const DISMISS_KEY = "zeriqai-install-dismissed"; // sessionStorage: cleared automatically on new session
+
+        function isStandalone() {
+          return (
+            window.matchMedia("(display-mode: standalone)").matches ||
+            window.navigator.standalone === true // iOS Safari
+          );
+        }
+
+        function showOverlay() {
+          overlay.classList.remove("hidden");
+          overlay.classList.add("flex");
+        }
+
+        function hideOverlay() {
+          overlay.classList.add("hidden");
+          overlay.classList.remove("flex");
+        }
+
+        let deferredPrompt = null;
+
+        // Only show the overlay when the app is genuinely NOT installed/running
+        // standalone, AND it hasn't been dismissed already this browser session.
+        const dismissedThisSession = sessionStorage.getItem(DISMISS_KEY) === "1";
+        if (!isStandalone() && !dismissedThisSession) {
+          showOverlay();
+        }
+
+        // Chrome/Edge/Android fire this when the app meets installability
+        // criteria. We intercept it so we can trigger it manually from our
+        // own button instead of the browser's mini-infobar.
+        window.addEventListener("beforeinstallprompt", (event) => {
+          event.preventDefault();
+          deferredPrompt = event;
+          installBtn.disabled = false;
+        });
+
+        installBtn.addEventListener("click", async () => {
+          if (!deferredPrompt) {
+            // No native prompt available (unsupported browser, iOS Safari,
+            // or criteria not yet met) — fall back to the manual steps
+            // already shown in the card instead of doing nothing silently.
+            statusEl.textContent =
+              "Your browser doesn't support one-tap install. Please use the steps above.";
+            return;
+          }
+
+          installBtn.disabled = true;
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          console.log("ZeriqAI install prompt outcome:", outcome);
+          deferredPrompt = null;
+
+          if (outcome !== "accepted") {
+            installBtn.disabled = false;
+          }
+        });
+
+        // Fires once the app is actually installed — hide the overlay.
+        window.addEventListener("appinstalled", () => {
+          deferredPrompt = null;
+          hideOverlay();
+          console.log("ZeriqAI installed successfully");
+        });
+
+        // Close (X) — dismiss for this browser session only. It will
+        // reappear on the next new session if the app is still not installed.
+        dismissBtn.addEventListener("click", () => {
+          sessionStorage.setItem(DISMISS_KEY, "1");
+          hideOverlay();
+        });
+
+        // "Continue in Browser" — same dismissal as the X, just a second
+        // entry point for users who don't want to install right now.
+        continueBtn.addEventListener("click", () => {
+          sessionStorage.setItem(DISMISS_KEY, "1");
+          hideOverlay();
+        });
+      })();
+    </script>
+
+    <!-- Script Entry -->
+    <script type="module" src="/src/frontend/main.ts"></script>
+  </body>
+</html>

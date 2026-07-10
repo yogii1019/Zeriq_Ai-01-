@@ -1,0 +1,1484 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ZeriqAI – AI Learning Companion (Frontend Portal)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "ui-sans-serif", "system-ui", "-apple-system", "sans-serif"],
+              display: ["Space Grotesk", "sans-serif"],
+              mono: ["JetBrains Mono", "monospace"],
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      .fade-in {
+        animation: fadeIn 0.25s ease-out forwards;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(4px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+      }
+    </style>
+  </head>
+  <body class="bg-[#F8FAFC]/90 font-sans antialiased relative min-h-screen overflow-x-hidden pb-12">
+    <!-- Glowing background decorative circles -->
+    <div class="fixed top-[-10%] left-[-15%] w-[60%] h-[60%] rounded-full bg-gradient-to-br from-indigo-400/20 to-blue-300/20 blur-[130px] pointer-events-none z-[-1] animate-pulse" style="animation-duration: 10s;"></div>
+    <div class="fixed bottom-[-10%] right-[-15%] w-[60%] h-[60%] rounded-full bg-gradient-to-tr from-sky-400/20 to-indigo-300/20 blur-[130px] pointer-events-none z-[-1] animate-pulse" style="animation-duration: 15s;"></div>
+
+    <!-- Navigation Bar -->
+    <header id="main-header" class="fixed top-0 left-0 right-0 h-16 bg-white/40 backdrop-blur-md border-b border-white/20 z-50 transition-all shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
+        <!-- Logo and Project Name -->
+        <a href="#" id="nav-logo" class="flex items-center gap-2 group">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-blue-500 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-indigo-100 group-hover:scale-105 transition-transform">
+            Z
+          </div>
+          <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent italic font-display">
+            Zeriq<span class="text-slate-800 font-medium">AI</span>
+          </span>
+        </a>
+
+        <!-- Navigation Links -->
+        <nav id="main-nav" class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+          <a href="#" id="link-home" class="hover:text-indigo-600 transition-colors">Home</a>
+          <a href="#" id="link-courses" class="hover:text-indigo-600 transition-colors hidden auth-required">Courses</a>
+          <a href="#" id="link-tutor" class="hover:text-indigo-600 transition-colors hidden auth-required">AI Tutor</a>
+          <a href="#" id="link-notes" class="hover:text-indigo-600 transition-colors hidden auth-required">Notes</a>
+          <a href="#" id="link-progress" class="hover:text-indigo-600 transition-colors hidden auth-required">Progress</a>
+        </nav>
+
+        <!-- Right Side Actions -->
+        <div id="nav-actions" class="flex items-center gap-4">
+          <button id="btn-nav-action" class="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-lg shadow-indigo-100 hover:shadow-xl transition-all cursor-pointer">
+            Get Started
+          </button>
+          <div id="user-pill" class="hidden items-center gap-3 bg-white/45 backdrop-blur-md border border-white/40 rounded-full py-1.5 pl-3 pr-2.5 shadow-sm">
+            <span id="user-pill-name" class="text-xs font-semibold text-slate-700 max-w-[120px] truncate">Student</span>
+            <button id="btn-logout" class="p-1 hover:bg-slate-100 rounded-full text-slate-500 hover:text-rose-600 transition-colors cursor-pointer" title="Log Out">
+              <i data-lucide="log-out" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Dynamic Slot -->
+    <main id="app-root" class="min-h-screen pt-16 flex flex-col">
+      <!-- Loading Shell -->
+      <div class="flex-1 flex flex-col items-center justify-center bg-transparent p-6">
+        <div class="w-12 h-12 rounded-full border-4 border-indigo-100 border-t-indigo-600 animate-spin mb-4"></div>
+        <p class="text-sm font-medium text-slate-500">Preparing ZeriqAI Virtual Workspace...</p>
+      </div>
+    </main>
+
+    <!-- Preferences Modal -->
+    <div id="preferences-modal" class="fixed inset-0 bg-slate-900/15 backdrop-blur-md flex items-center justify-center z-50 hidden fade-in">
+      <div class="bg-white/60 backdrop-blur-xl rounded-2xl shadow-xl border border-white/40 max-w-md w-full p-6 mx-4 relative">
+        <button id="btn-close-pref-modal" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-10 h-10 rounded-xl bg-indigo-50/80 border border-indigo-100/50 flex items-center justify-center text-indigo-600 shadow-inner">
+            <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-slate-800 font-display">Study Preferences</h3>
+            <p class="text-xs text-slate-500">Customize your personalized AI tutor session</p>
+          </div>
+        </div>
+        <form id="preferences-form" class="space-y-4">
+          <div>
+            <label for="pref-course" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Selected Course</label>
+            <select id="pref-course" class="w-full bg-white/50 border border-slate-200/60 rounded-xl py-2.5 px-3 text-slate-800 text-sm focus:outline-none focus:border-indigo-500">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Difficulty Level</label>
+            <div class="grid grid-cols-3 gap-2">
+              <label class="cursor-pointer">
+                <input type="radio" name="difficulty" value="Beginner" checked class="sr-only peer">
+                <div class="border border-slate-200 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:text-indigo-700 rounded-xl py-2 px-3 text-center text-xs font-medium text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
+                  Beginner
+                </div>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="difficulty" value="Intermediate" class="sr-only peer">
+                <div class="border border-slate-200 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:text-indigo-700 rounded-xl py-2 px-3 text-center text-xs font-medium text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
+                  Intermediate
+                </div>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="difficulty" value="Advanced" class="sr-only peer">
+                <div class="border border-slate-200 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:text-indigo-700 rounded-xl py-2 px-3 text-center text-xs font-medium text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
+                  Advanced
+                </div>
+              </label>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Preferred AI Learning Mode</label>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="cursor-pointer">
+                <input type="radio" name="ai-mode" value="Text" checked class="sr-only peer">
+                <div class="border border-slate-200 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:text-indigo-700 rounded-xl py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
+                  <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+                  Text Mode
+                </div>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="ai-mode" value="Voice" class="sr-only peer">
+                <div class="border border-slate-200 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:text-indigo-700 rounded-xl py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
+                  <i data-lucide="volume-2" class="w-3.5 h-3.5"></i>
+                  Voice Mode
+                </div>
+              </label>
+            </div>
+          </div>
+          <button id="btn-save-pref" type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-xl py-2.5 text-sm font-semibold hover:opacity-95 shadow-lg shadow-indigo-100/50 transition-all mt-4 cursor-pointer">
+            Start Personalized Study
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Frontend Core Engine script -->
+    <script>
+      // ----------------- STATE MANAGEMENT -----------------
+      const state = {
+        user: null,
+        courses: [],
+        activeCourse: null,
+        lessons: [],
+        activeLesson: null,
+        notes: [],
+        progressList: [],
+        quizzes: [],
+        quizResults: [],
+        currentView: "home", // "home" | "login" | "dashboard" | "course" | "tutor" | "notes" | "progress"
+        isRecording: false,
+        activeAudio: null,
+        studyTimer: null,
+        activeUtterance: null
+      };
+
+      // ----------------- API CLIENT -----------------
+      const API_BASE = window.location.origin + "/api";
+
+      const apiClient = {
+        getHeaders() {
+          const headers = { "Content-Type": "application/json" };
+          if (state.user && state.user.id) {
+            headers["x-user-id"] = String(state.user.id);
+          }
+          return headers;
+        },
+
+        async fetchJson(endpoint, options = {}) {
+          const config = {
+            ...options,
+            headers: {
+              ...this.getHeaders(),
+              ...(options.headers || {})
+            }
+          };
+          const res = await fetch(`${API_BASE}${endpoint}`, config);
+          if (!res.ok) {
+            const errorText = await res.text();
+            throw new Error(errorText || `HTTP ${res.status}`);
+          }
+          return res.json();
+        },
+
+        async login(username, email) {
+          const user = await this.fetchJson("/users/login", {
+            method: "POST",
+            body: JSON.stringify({ username, email })
+          });
+          state.user = user;
+          return user;
+        },
+
+        async getProfile() {
+          const user = await this.fetchJson("/users/profile");
+          state.user = user;
+          return user;
+        },
+
+        async savePreferences(courseId, difficulty, preferredAiMode) {
+          const user = await this.fetchJson("/users/preferences", {
+            method: "POST",
+            body: JSON.stringify({ courseId, difficulty, preferredAiMode })
+          });
+          state.user = user;
+          return user;
+        },
+
+        async getCourses() {
+          return this.fetchJson("/courses");
+        },
+
+        async getCourseById(id) {
+          return this.fetchJson(`/courses/${id}`);
+        },
+
+        async getLessonsByCourse(courseId) {
+          return this.fetchJson(`/courses/${courseId}/lessons`);
+        },
+
+        async getLessonById(lessonId) {
+          return this.fetchJson(`/courses/lessons/${lessonId}`);
+        },
+
+        async getResourcesByCourse(courseId) {
+          return this.fetchJson(`/courses/${courseId}/resources`);
+        },
+
+        async getNotes() {
+          return this.fetchJson("/notes");
+        },
+
+        async createNote(title, content, courseId, lessonId) {
+          return this.fetchJson("/notes", {
+            method: "POST",
+            body: JSON.stringify({ title, content, courseId, lessonId })
+          });
+        },
+
+        async updateNote(id, title, content) {
+          return this.fetchJson(`/notes/${id}`, {
+            method: "PUT",
+            body: JSON.stringify({ title, content })
+          });
+        },
+
+        async deleteNote(id) {
+          return this.fetchJson(`/notes/${id}`, { method: "DELETE" });
+        },
+
+        async AIsummarizeNote(id) {
+          return this.fetchJson(`/notes/${id}/summarize`, { method: "POST" });
+        },
+
+        async getChatHistory() {
+          return this.fetchJson("/chat");
+        },
+
+        async sendChatMessage(message, courseId, aiMode = "Text") {
+          return this.fetchJson("/chat/send", {
+            method: "POST",
+            body: JSON.stringify({ message, courseId, aiMode })
+          });
+        },
+
+        async generateTTS(text) {
+          return this.fetchJson("/chat/tts", {
+            method: "POST",
+            body: JSON.stringify({ text })
+          });
+        },
+
+        async clearChat() {
+          return this.fetchJson("/chat/clear", { method: "POST" });
+        },
+
+        async getProgress() {
+          return this.fetchJson("/progress");
+        },
+
+        async trackStudyTime(courseId, lessonId, seconds) {
+          return this.fetchJson("/progress/time", {
+            method: "POST",
+            body: JSON.stringify({ courseId, lessonId, seconds })
+          });
+        },
+
+        async completeLesson(courseId, lessonId) {
+          return this.fetchJson("/progress/lesson/complete", {
+            method: "POST",
+            body: JSON.stringify({ courseId, lessonId })
+          });
+        },
+
+        async getQuizResults() {
+          return this.fetchJson("/progress/quizzes");
+        },
+
+        async submitQuizAnswer(quizId, answer) {
+          return this.fetchJson("/progress/quiz/submit", {
+            method: "POST",
+            body: JSON.stringify({ quizId, answer })
+          });
+        }
+      };
+
+      // ----------------- TTS / VOICE PLAYER FALLBACK ENGINE -----------------
+      function speakWithWebSpeech(text) {
+        try {
+          if (window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+          }
+
+          const playBar = document.getElementById("tts-playing-bar");
+          if (playBar) {
+            playBar.classList.remove("hidden");
+            playBar.classList.add("flex");
+            const textModeIndicator = document.getElementById("txt-audio-mode");
+            if (textModeIndicator) {
+              textModeIndicator.textContent = "Web Speech";
+            }
+          }
+
+          const cleanText = text
+            .replace(/[#*`_-]/g, "")
+            .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+            .substring(0, 500);
+
+          const utterance = new SpeechSynthesisUtterance(cleanText);
+          state.activeUtterance = utterance;
+
+          if (window.speechSynthesis) {
+            const voices = window.speechSynthesis.getVoices();
+            const engVoice = voices.find(v => v.lang.startsWith("en") && v.name.includes("Google")) ||
+                             voices.find(v => v.lang.startsWith("en")) ||
+                             voices[0];
+            if (engVoice) {
+              utterance.voice = engVoice;
+            }
+          }
+
+          utterance.onend = () => {
+            if (state.activeUtterance === utterance) {
+              playBar?.classList.add("hidden");
+              playBar?.classList.remove("flex");
+              state.activeUtterance = null;
+            }
+          };
+
+          utterance.onerror = (e) => {
+            console.warn("SpeechSynthesis error:", e);
+            if (state.activeUtterance === utterance) {
+              playBar?.classList.add("hidden");
+              playBar?.classList.remove("flex");
+              state.activeUtterance = null;
+            }
+          };
+
+          window.speechSynthesis.speak(utterance);
+        } catch (err) {
+          console.error("Web Speech fallback error:", err);
+        }
+      }
+
+      function playPcmSpeech(base64Audio, textToSpeak) {
+        if (window.speechSynthesis) {
+          window.speechSynthesis.cancel();
+        }
+
+        if (state.activeAudio) {
+          try {
+            state.activeAudio.pause();
+          } catch (_) {}
+          state.activeAudio = null;
+        }
+
+        const playBar = document.getElementById("tts-playing-bar");
+
+        if (!base64Audio || base64Audio.trim().length < 20) {
+          console.warn("No direct base64 audio source, falling back to browser Web Speech Synthesis.");
+          if (textToSpeak) {
+            speakWithWebSpeech(textToSpeak);
+          } else {
+            playBar?.classList.add("hidden");
+            playBar?.classList.remove("flex");
+          }
+          return;
+        }
+
+        try {
+          const formats = [
+            `data:audio/aac;base64,${base64Audio}`,
+            `data:audio/mp3;base64,${base64Audio}`,
+            `data:audio/wav;base64,${base64Audio}`
+          ];
+
+          let currentFormatIndex = 0;
+          const audio = new Audio();
+          state.activeAudio = audio;
+
+          playBar?.classList.remove("hidden");
+          playBar?.classList.add("flex");
+          const textModeIndicator = document.getElementById("txt-audio-mode");
+          if (textModeIndicator) {
+            textModeIndicator.textContent = "AI Speech";
+          }
+
+          const tryNextFormatOrFallback = () => {
+            currentFormatIndex++;
+            if (currentFormatIndex < formats.length) {
+              audio.src = formats[currentFormatIndex];
+              const playPromise = audio.play();
+              if (playPromise !== undefined) {
+                playPromise.catch((err) => {
+                  console.warn("Alternative format play promise failed:", err);
+                  tryNextFormatOrFallback();
+                });
+              }
+            } else {
+              console.warn("All audio container formats failed. Falling back to browser SpeechSynthesis.");
+              if (textToSpeak) {
+                speakWithWebSpeech(textToSpeak);
+              } else {
+                playBar?.classList.add("hidden");
+                playBar?.classList.remove("flex");
+                if (state.activeAudio === audio) {
+                  state.activeAudio = null;
+                }
+              }
+            }
+          };
+
+          audio.onerror = (e) => {
+            console.warn("Audio loading error:", e);
+            tryNextFormatOrFallback();
+          };
+
+          audio.onended = () => {
+            playBar?.classList.add("hidden");
+            playBar?.classList.remove("flex");
+            if (state.activeAudio === audio) {
+              state.activeAudio = null;
+            }
+          };
+
+          audio.src = formats[currentFormatIndex];
+          const mimeToCheck = currentFormatIndex === 0 ? "audio/aac" : (currentFormatIndex === 1 ? "audio/mpeg" : "audio/wav");
+          if (audio.canPlayType && audio.canPlayType(mimeToCheck) === "") {
+            tryNextFormatOrFallback();
+            return;
+          }
+
+          const playPromise = audio.play();
+          if (playPromise !== undefined) {
+            playPromise.catch((err) => {
+              console.warn("Direct play failed, switching formats:", err);
+              tryNextFormatOrFallback();
+            });
+          }
+        } catch (err) {
+          console.error("Audio playback setup failed, falling back to Web Speech:", err);
+          if (textToSpeak) {
+            speakWithWebSpeech(textToSpeak);
+          } else {
+            playBar?.classList.add("hidden");
+            playBar?.classList.remove("flex");
+          }
+        }
+      }
+
+      // ----------------- NAVIGATION & ROUTING -----------------
+      function navigateTo(view) {
+        state.currentView = view;
+        renderView();
+        
+        // Update URL hash for standard router capability
+        window.location.hash = view;
+
+        // Manage active classes on navigation header links
+        document.querySelectorAll("#main-nav a").forEach(link => {
+          link.classList.remove("text-indigo-600", "font-semibold");
+          link.classList.add("text-slate-600");
+        });
+        const activeLink = document.getElementById(`link-${view}`);
+        if (activeLink) {
+          activeLink.classList.add("text-indigo-600", "font-semibold");
+          activeLink.classList.remove("text-slate-600");
+        }
+      }
+
+      // ----------------- VIEW RENDERERS -----------------
+      async function renderView() {
+        const root = document.getElementById("app-root");
+        if (!root) return;
+
+        // Sync header auth visibility
+        if (state.user) {
+          document.querySelectorAll(".auth-required").forEach(el => el.classList.remove("hidden"));
+          const userPill = document.getElementById("user-pill");
+          if (userPill) userPill.classList.remove("hidden");
+          const btnNavAction = document.getElementById("btn-nav-action");
+          if (btnNavAction) btnNavAction.classList.add("hidden");
+          const userPillName = document.getElementById("user-pill-name");
+          if (userPillName) userPillName.textContent = state.user.username;
+        } else {
+          document.querySelectorAll(".auth-required").forEach(el => el.classList.add("hidden"));
+          const userPill = document.getElementById("user-pill");
+          if (userPill) userPill.classList.add("hidden");
+          const btnNavAction = document.getElementById("btn-nav-action");
+          if (btnNavAction) btnNavAction.classList.remove("hidden");
+          
+          if (state.currentView !== "home" && state.currentView !== "login") {
+            state.currentView = "home";
+          }
+        }
+
+        switch (state.currentView) {
+          case "home":
+            renderHome(root);
+            break;
+          case "login":
+            renderLogin(root);
+            break;
+          case "dashboard":
+            await renderDashboard(root);
+            break;
+          case "course":
+            await renderCourse(root);
+            break;
+          case "tutor":
+            await renderTutor(root);
+            break;
+          case "notes":
+            await renderNotes(root);
+            break;
+          case "progress":
+            await renderProgress(root);
+            break;
+          default:
+            renderHome(root);
+        }
+
+        // Initialize Lucide icons on any newly rendered templates
+        lucide.createIcons();
+      }
+
+      function renderHome(root) {
+        root.innerHTML = `
+          <div class="flex-1 flex flex-col items-center justify-center max-w-5xl mx-auto px-4 py-16 text-center">
+            <span class="px-3 py-1 text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full mb-6 inline-block uppercase tracking-wider">
+              Meet ZeriqAI
+            </span>
+            <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-slate-950 font-display mb-6">
+              Your Personal <span class="bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">AI Learning Companion</span>
+            </h1>
+            <p class="text-lg text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed">
+              Unlock a hyper-personalized education with multimodal speech, dynamic problem-solving, and smart summaries tailored to your style.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+              <button id="btn-home-start" class="px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-xl font-semibold shadow-lg shadow-indigo-100/80 hover:shadow-xl transition-all hover:scale-[1.02] cursor-pointer">
+                Get Started Free
+              </button>
+              <button id="btn-home-learn" class="px-8 py-3.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-semibold hover:bg-slate-50 transition-all cursor-pointer">
+                Learn How It Works
+              </button>
+            </div>
+          </div>
+        `;
+
+        document.getElementById("btn-home-start")?.addEventListener("click", () => {
+          navigateTo("login");
+        });
+        document.getElementById("btn-home-learn")?.addEventListener("click", () => {
+          alert("ZeriqAI is an adaptive multimodal study companion that tracks study time, completes lessons, runs AI conversational speech simulations, and summarizes your study workspace!");
+        });
+      }
+
+      function renderLogin(root) {
+        root.innerHTML = `
+          <div class="flex-1 flex items-center justify-center px-4 py-12">
+            <div class="bg-white/50 backdrop-blur-md rounded-2xl shadow-xl border border-white/40 max-w-md w-full p-8 relative">
+              <div class="text-center mb-8">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4 shadow-lg shadow-indigo-100">
+                  Z
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900 font-display">Welcome to ZeriqAI</h2>
+                <p class="text-sm text-slate-500 mt-1">Sign in or create an account to start studying</p>
+              </div>
+
+              <form id="login-form" class="space-y-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Username</label>
+                  <input type="text" id="login-username" required placeholder="e.g. CodeLearner" class="w-full bg-white/50 border border-slate-200/60 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Email Address</label>
+                  <input type="email" id="login-email" required placeholder="learner@example.com" class="w-full bg-white/50 border border-slate-200/60 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:border-indigo-500">
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-xl py-3 text-sm font-semibold hover:opacity-95 shadow-lg shadow-indigo-100/50 transition-all mt-6 cursor-pointer flex items-center justify-center gap-2">
+                  Access Portal <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+              </form>
+            </div>
+          </div>
+        `;
+
+        document.getElementById("login-form")?.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const username = document.getElementById("login-username")?.value;
+          const email = document.getElementById("login-email")?.value;
+          if (username && email) {
+            try {
+              const rootBtn = e.target.querySelector("button[type='submit']");
+              rootBtn.disabled = true;
+              rootBtn.textContent = "Connecting Workspace...";
+              
+              await apiClient.login(username, email);
+              
+              // Load general app state
+              state.courses = await apiClient.getCourses();
+              navigateTo("dashboard");
+            } catch (err) {
+              alert(`Access Failed: ${err.message}`);
+            }
+          }
+        });
+      }
+
+      async function renderDashboard(root) {
+        try {
+          state.courses = await apiClient.getCourses();
+          state.progressList = await apiClient.getProgress();
+        } catch (_) {}
+
+        const itemsHtml = state.courses.map(course => {
+          const userProg = state.progressList.find(p => p.courseId === course.id);
+          const completionPercent = userProg ? (userProg.completed ? 100 : 50) : 0; // standard mock percentage math
+          return `
+            <div class="bg-white/60 backdrop-blur-md border border-slate-200/40 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col">
+              <span class="text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-2">${course.difficulty}</span>
+              <h3 class="text-lg font-bold text-slate-900 font-display mb-2">${course.title}</h3>
+              <p class="text-sm text-slate-500 line-clamp-2 leading-relaxed mb-6">${course.description}</p>
+              
+              <div class="mt-auto space-y-4">
+                <div>
+                  <div class="flex justify-between text-xs text-slate-500 font-medium mb-1">
+                    <span>Progress</span>
+                    <span>${completionPercent}%</span>
+                  </div>
+                  <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-indigo-500 to-blue-500" style="width: ${completionPercent}%"></div>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-2">
+                  <span class="text-xs text-slate-400 flex items-center gap-1">
+                    <i data-lucide="clock" class="w-3.5 h-3.5"></i> ${course.duration}
+                  </span>
+                  <button data-course-id="${course.id}" class="btn-open-course text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1 cursor-pointer">
+                    Enter Workspace <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        root.innerHTML = `
+          <div class="flex-1 max-w-7xl mx-auto px-4 py-8 w-full space-y-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h1 class="text-3xl font-extrabold tracking-tight text-slate-950 font-display">Dashboard</h1>
+                <p class="text-sm text-slate-500">Pick a course track to start practicing with ZeriqAI</p>
+              </div>
+              <button id="btn-quick-pref" class="px-4 py-2 text-sm font-semibold bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-all shadow-sm flex items-center gap-2 cursor-pointer">
+                <i data-lucide="sliders-horizontal" class="w-4 h-4"></i> Study Settings
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              ${itemsHtml}
+            </div>
+          </div>
+        `;
+
+        document.getElementById("btn-quick-pref")?.addEventListener("click", () => {
+          showPreferencesModal();
+        });
+
+        document.querySelectorAll(".btn-open-course").forEach(btn => {
+          btn.addEventListener("click", async (e) => {
+            const courseId = Number(e.currentTarget.getAttribute("data-course-id"));
+            state.activeCourse = state.courses.find(c => c.id === courseId);
+            navigateTo("course");
+          });
+        });
+      }
+
+      async function renderCourse(root) {
+        if (!state.activeCourse) {
+          navigateTo("dashboard");
+          return;
+        }
+
+        let lessons = [];
+        let resources = [];
+        try {
+          lessons = await apiClient.getLessonsByCourse(state.activeCourse.id);
+          resources = await apiClient.getResourcesByCourse(state.activeCourse.id);
+          state.lessons = lessons;
+        } catch (_) {}
+
+        const lessonsListHtml = lessons.map(les => `
+          <div class="bg-white/50 border border-slate-200/50 rounded-xl p-4 flex items-center justify-between hover:border-indigo-100 transition-all">
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm shrink-0">
+                ${les.orderIndex}
+              </div>
+              <div>
+                <h4 class="text-sm font-bold text-slate-800">${les.title}</h4>
+                <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">${les.practiceProblem ? "Has Practice Question" : "Reading module"}</p>
+              </div>
+            </div>
+            <button data-lesson-id="${les.id}" class="btn-launch-lesson text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg transition-all cursor-pointer">
+              Launch
+            </button>
+          </div>
+        `).join("");
+
+        const resourcesHtml = resources.map(res => `
+          <a href="${res.url}" target="_blank" class="flex items-center gap-2 text-xs text-slate-600 hover:text-indigo-600 font-medium p-1 transition-colors">
+            <i data-lucide="${res.type === 'video' ? 'video' : 'file-text'}" class="w-4 h-4 text-indigo-500"></i> ${res.title}
+          </a>
+        `).join("");
+
+        root.innerHTML = `
+          <div class="flex-1 max-w-7xl mx-auto px-4 py-8 w-full grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 space-y-6">
+              <div class="flex items-center gap-2">
+                <button id="btn-back-dash" class="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 transition-all cursor-pointer">
+                  <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                </button>
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Back to Dashboard</span>
+              </div>
+
+              <div class="bg-gradient-to-r from-indigo-900 to-slate-900 rounded-3xl p-8 text-white relative overflow-hidden shadow-lg">
+                <div class="relative z-10 max-w-xl space-y-4">
+                  <span class="px-2.5 py-1 text-[10px] font-bold bg-white/10 border border-white/20 rounded-full inline-block uppercase tracking-wider">${state.activeCourse.difficulty} Level</span>
+                  <h2 class="text-2xl md:text-3xl font-bold font-display">${state.activeCourse.title}</h2>
+                  <p class="text-slate-300 text-sm leading-relaxed">${state.activeCourse.description}</p>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <h3 class="text-lg font-bold text-slate-900 font-display">Lessons & Study Modules</h3>
+                <div class="grid grid-cols-1 gap-3">
+                  ${lessonsListHtml || "<p class='text-xs text-slate-400'>No lessons found in this course module.</p>"}
+                </div>
+              </div>
+            </div>
+
+            <!-- Right side resource bar -->
+            <div class="space-y-6">
+              <div class="bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-2xl p-6 shadow-sm">
+                <h4 class="text-sm font-bold text-slate-800 mb-4 font-display flex items-center gap-1.5">
+                  <i data-lucide="bookmark" class="w-4 h-4 text-indigo-500"></i> Reference Materials
+                </h4>
+                <div class="space-y-2">
+                  ${resourcesHtml || "<p class='text-xs text-slate-400'>No external references attached.</p>"}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.getElementById("btn-back-dash")?.addEventListener("click", () => {
+          navigateTo("dashboard");
+        });
+
+        document.querySelectorAll(".btn-launch-lesson").forEach(btn => {
+          btn.addEventListener("click", async (e) => {
+            const lessonId = Number(e.currentTarget.getAttribute("data-lesson-id"));
+            state.activeLesson = state.lessons.find(l => l.id === lessonId);
+            navigateTo("tutor");
+          });
+        });
+      }
+
+      async function renderTutor(root) {
+        if (!state.activeLesson) {
+          navigateTo("dashboard");
+          return;
+        }
+
+        let chatHistory = [];
+        try {
+          chatHistory = await apiClient.getChatHistory();
+        } catch (_) {}
+
+        // Setup ticking timer for workspace tracking
+        if (state.studyTimer) clearInterval(state.studyTimer);
+        let secondsTicked = 0;
+        state.studyTimer = setInterval(async () => {
+          secondsTicked += 5;
+          try {
+            await apiClient.trackStudyTime(state.activeCourse.id, state.activeLesson.id, 5);
+          } catch (e) {
+            console.warn("Autosave ticking time failed", e);
+          }
+        }, 5000);
+
+        root.innerHTML = `
+          <div class="flex-1 max-w-7xl mx-auto px-4 py-6 w-full grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-5rem)]">
+            
+            <!-- Left Panel: Lesson Reading Space -->
+            <div class="lg:col-span-5 bg-white/60 border border-slate-200/40 rounded-2xl p-6 flex flex-col shadow-sm h-full overflow-hidden relative">
+              <div class="flex items-center justify-between pb-3 border-b border-slate-100 shrink-0">
+                <div class="flex items-center gap-2">
+                  <button id="btn-back-course" class="p-1 hover:bg-slate-100 rounded text-slate-500 transition-all cursor-pointer">
+                    <i data-lucide="arrow-left" class="w-4.5 h-4.5"></i>
+                  </button>
+                  <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Lesson Workspace</span>
+                </div>
+                <button id="btn-complete-lesson" class="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer">
+                  Mark Completed
+                </button>
+              </div>
+
+              <!-- Lesson Content Area -->
+              <div class="flex-1 overflow-y-auto custom-scrollbar py-6 space-y-6">
+                <h2 class="text-xl font-bold text-slate-900 font-display">${state.activeLesson.title}</h2>
+                
+                <div class="prose prose-slate text-sm leading-relaxed text-slate-700 whitespace-pre-wrap">
+                  ${state.activeLesson.content}
+                </div>
+
+                ${state.activeLesson.exampleCode ? `
+                  <div class="space-y-2">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">Interactive Code snippet</span>
+                    <pre class="bg-slate-900 text-slate-100 font-mono text-xs p-4 rounded-xl overflow-x-auto">${state.activeLesson.exampleCode}</pre>
+                  </div>
+                ` : ""}
+
+                ${state.activeLesson.practiceProblem ? `
+                  <div class="bg-indigo-50/50 border border-indigo-100/50 rounded-xl p-4 space-y-3">
+                    <span class="text-xs font-bold text-indigo-700 uppercase tracking-widest flex items-center gap-1">
+                      <i data-lucide="code" class="w-3.5 h-3.5"></i> Practice Question
+                    </span>
+                    <p class="text-xs text-slate-600 leading-relaxed">${state.activeLesson.practiceProblem}</p>
+                    <textarea id="practice-user-code" placeholder="Write your sample implementation or notes here..." class="w-full h-24 bg-white border border-slate-200/60 rounded-lg p-2.5 text-xs font-mono focus:outline-none focus:border-indigo-500"></textarea>
+                    <div class="flex items-center justify-between">
+                      <button id="btn-submit-code" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-3.5 py-1.5 rounded-lg shadow transition-all cursor-pointer">
+                        Ask AI Tutor to Review
+                      </button>
+                      <button id="btn-save-as-note" class="text-xs font-semibold text-slate-500 hover:text-indigo-600 flex items-center gap-1 cursor-pointer">
+                        <i data-lucide="file-plus" class="w-3.5 h-3.5"></i> Save as Note
+                      </button>
+                    </div>
+                  </div>
+                ` : ""}
+              </div>
+            </div>
+
+            <!-- Right Panel: Interactive Multimodal AI Companion -->
+            <div class="lg:col-span-7 bg-white/60 border border-slate-200/40 rounded-2xl flex flex-col shadow-sm h-full overflow-hidden">
+              <!-- Chat Header -->
+              <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold font-display shadow-inner">
+                    Z
+                  </div>
+                  <div>
+                    <h3 class="text-sm font-bold text-slate-800 font-display flex items-center gap-1.5">
+                      ZeriqAI Smart Tutor
+                      <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    </h3>
+                    <p class="text-[10px] text-slate-500">Currently in ${state.user?.preferredAiMode || "Text"} Study Mode</p>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <button id="btn-toggle-ai-mode" class="p-2 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-indigo-600 transition-all cursor-pointer" title="Toggle Voice/Text Mode">
+                    <i data-lucide="${state.user?.preferredAiMode === 'Voice' ? 'volume-2' : 'message-square'}" class="w-4.5 h-4.5"></i>
+                  </button>
+                  <button id="btn-chat-clear" class="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-rose-600 transition-all cursor-pointer" title="Clear Study Chat">
+                    <i data-lucide="trash-2" class="w-4.5 h-4.5"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Audio Player Status HUD Bar -->
+              <div id="tts-playing-bar" class="bg-indigo-50 border-b border-indigo-100/50 px-6 py-2.5 hidden items-center justify-between transition-all shrink-0">
+                <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-1">
+                    <span class="w-1.5 h-3.5 bg-indigo-600 rounded-full animate-bounce" style="animation-delay: 0.1s"></span>
+                    <span class="w-1.5 h-4 bg-indigo-600 rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
+                    <span class="w-1.5 h-3 bg-indigo-600 rounded-full animate-bounce" style="animation-delay: 0.3s"></span>
+                  </div>
+                  <span class="text-xs font-semibold text-indigo-900 tracking-wide font-display">Tutor Speaking (<span id="txt-audio-mode">AI Speech</span>)</span>
+                </div>
+                <button id="btn-tts-stop" class="text-[10px] font-bold text-rose-600 hover:text-rose-700 bg-rose-50 border border-rose-100 hover:bg-rose-100 px-2 py-0.5 rounded-md transition-all cursor-pointer">
+                  Stop Voice
+                </button>
+              </div>
+
+              <!-- Chat Message History Container -->
+              <div id="chat-messages-container" class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4 bg-transparent">
+                <!-- Dynamically populated -->
+              </div>
+
+              <!-- Chat Input Footer -->
+              <div class="p-4 bg-slate-50/30 border-t border-slate-100 shrink-0 space-y-2">
+                <form id="chat-input-form" class="flex items-center gap-2">
+                  <input type="text" id="chat-text-input" autocomplete="off" placeholder="Ask your tutor anything..." class="flex-1 bg-white border border-slate-200/60 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-indigo-500">
+                  
+                  <button type="button" id="btn-chat-voice" class="p-3 bg-slate-100 hover:bg-indigo-50 text-slate-500 hover:text-indigo-600 rounded-xl transition-all cursor-pointer" title="Record Voice">
+                    <i data-lucide="mic" id="mic-icon" class="w-5 h-5"></i>
+                  </button>
+
+                  <button type="submit" id="btn-chat-send" class="p-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow shadow-indigo-100 hover:scale-[1.02] transition-all cursor-pointer">
+                    <i data-lucide="send" class="w-5 h-5"></i>
+                  </button>
+                </form>
+                <p class="text-[10px] text-center text-slate-400">Supported by Multimodal Speech-to-Speech Engine FALLBACK system</p>
+              </div>
+            </div>
+
+          </div>
+        `;
+
+        // Render functions
+        const chatContainer = document.getElementById("chat-messages-container");
+        
+        function renderMessages() {
+          if (!chatContainer) return;
+          if (chatHistory.length === 0) {
+            chatContainer.innerHTML = `
+              <div class="h-full flex flex-col items-center justify-center text-center p-6 space-y-2">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100/50 flex items-center justify-center text-indigo-600">
+                  <i data-lucide="message-square" class="w-5 h-5"></i>
+                </div>
+                <h4 class="text-sm font-bold text-slate-800 font-display">Study Session Connected</h4>
+                <p class="text-xs text-slate-400 max-w-sm">Type or record your question. AI tutor is ready to review structures, explain concepts, or correct your sample practice logic.</p>
+              </div>
+            `;
+            lucide.createIcons();
+            return;
+          }
+
+          chatContainer.innerHTML = chatHistory.map(chat => {
+            const isStudent = chat.role === "student";
+            return `
+              <div class="flex ${isStudent ? 'justify-end' : 'justify-start'} fade-in">
+                <div class="max-w-[85%] rounded-2xl px-4 py-3 text-sm shadow-sm leading-relaxed relative ${
+                  isStudent 
+                    ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-tr-none' 
+                    : 'bg-white border border-slate-100 text-slate-800 rounded-tl-none'
+                }">
+                  <p class="whitespace-pre-wrap">${chat.message}</p>
+                  
+                  ${!isStudent ? `
+                    <div class="flex items-center gap-3 mt-2 pt-2 border-t border-slate-100/50">
+                      <button data-audio-b64="${chat.audioBase64 || ''}" data-message-text="${encodeURIComponent(chat.message)}" class="btn-chat-voice-play text-indigo-600 font-bold hover:text-indigo-700 flex items-center gap-1 cursor-pointer text-xs">
+                        <i data-lucide="volume-2" class="w-3.5 h-3.5"></i> Read Aloud
+                      </button>
+                    </div>
+                  ` : ""}
+                </div>
+              </div>
+            `;
+          }).join("");
+
+          // Scroll to bottom
+          chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: "smooth" });
+
+          // Bind event listeners to speak actions
+          document.querySelectorAll(".btn-chat-voice-play").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+              const b64 = e.currentTarget.getAttribute("data-audio-b64") || "";
+              const text = decodeURIComponent(e.currentTarget.getAttribute("data-message-text") || "");
+              playPcmSpeech(b64, text);
+            });
+          });
+
+          lucide.createIcons();
+        }
+
+        renderMessages();
+
+        // Left panels actions
+        document.getElementById("btn-back-course")?.addEventListener("click", () => {
+          if (state.studyTimer) clearInterval(state.studyTimer);
+          navigateTo("course");
+        });
+
+        document.getElementById("btn-complete-lesson")?.addEventListener("click", async () => {
+          try {
+            await apiClient.completeLesson(state.activeCourse.id, state.activeLesson.id);
+            alert("Congratulations! This lesson module is certified complete.");
+            navigateTo("course");
+          } catch (e) {
+            alert("Error updating course milestone.");
+          }
+        });
+
+        document.getElementById("btn-save-as-note")?.addEventListener("click", async () => {
+          const uCode = document.getElementById("practice-user-code")?.value || "";
+          if (!uCode.trim()) {
+            alert("Please type some custom code or study draft notes first.");
+            return;
+          }
+          try {
+            await apiClient.createNote(`Snippet: ${state.activeLesson.title}`, uCode, state.activeCourse.id, state.activeLesson.id);
+            alert("Study notes successfully cataloged inside Notes Hub!");
+          } catch (_) {
+            alert("Failed to archive notes.");
+          }
+        });
+
+        document.getElementById("btn-submit-code")?.addEventListener("click", async () => {
+          const uCode = document.getElementById("practice-user-code")?.value || "";
+          if (!uCode.trim()) return;
+          const query = `Here is my code/draft solution to the practice problem "${state.activeLesson.practiceProblem}":\n\n\`\`\`\n${uCode}\n\`\`\`\nPlease review and explain if it satisfies the requirement.`;
+          
+          try {
+            // Append student
+            chatHistory.push({ role: "student", message: query, createdAt: new Date().toISOString() });
+            renderMessages();
+            
+            // Show typing indicator
+            const typingInd = document.createElement("div");
+            typingInd.id = "temp-typing-loader";
+            typingInd.className = "flex justify-start fade-in";
+            typingInd.innerHTML = `
+              <div class="bg-white border border-slate-100 rounded-2xl px-4 py-3 text-xs text-slate-500 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-ping"></span> Writing Tutor Review...
+              </div>
+            `;
+            chatContainer?.appendChild(typingInd);
+            chatContainer?.scrollTo({ top: chatContainer.scrollHeight, behavior: "smooth" });
+
+            const apiRes = await apiClient.sendChatMessage(query, state.activeCourse.id, state.user?.preferredAiMode || "Text");
+            typingInd.remove();
+
+            chatHistory.push(apiRes.response);
+            renderMessages();
+
+            if (state.user?.preferredAiMode === "Voice") {
+              playPcmSpeech(apiRes.audioBase64 || "", apiRes.response.message);
+            }
+          } catch (err) {
+            document.getElementById("temp-typing-loader")?.remove();
+            alert("Review submission request failed.");
+          }
+        });
+
+        // Toggle Study settings right from tutor
+        document.getElementById("btn-toggle-ai-mode")?.addEventListener("click", async () => {
+          const newMode = state.user?.preferredAiMode === "Voice" ? "Text" : "Voice";
+          try {
+            await apiClient.savePreferences(state.activeCourse.id, state.user?.difficulty || "Beginner", newMode);
+            const titleMsg = document.getElementById("btn-toggle-ai-mode");
+            if (titleMsg) {
+              const voiceIcon = newMode === "Voice" ? "volume-2" : "message-square";
+              titleMsg.innerHTML = `<i data-lucide="${voiceIcon}" class="w-4.5 h-4.5"></i>`;
+              lucide.createIcons();
+            }
+            alert(`Switched to AI ${newMode} Companion Mode.`);
+            navigateTo("tutor");
+          } catch (_) {
+            alert("Error altering learning preferences.");
+          }
+        });
+
+        // Clear Chat
+        document.getElementById("btn-chat-clear")?.addEventListener("click", async () => {
+          if (!confirm("Clear your tutoring conversation logs history with ZeriqAI?")) return;
+          try {
+            await apiClient.clearChat();
+            chatHistory = [];
+            renderMessages();
+          } catch (e) {
+            alert("Error wiping chat streams.");
+          }
+        });
+
+        // Speech recognition
+        const voiceBtn = document.getElementById("btn-chat-voice");
+        voiceBtn?.addEventListener("click", () => {
+          const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+          if (!SpeechRec) {
+            alert("SpeechRecognition is not natively supported in this sandbox iframe. Open app in a new tab to enjoy voice streaming.");
+            return;
+          }
+
+          if (state.isRecording) {
+            state.isRecording = false;
+            document.getElementById("mic-icon")?.classList.remove("text-rose-600", "animate-pulse");
+            return;
+          }
+
+          const rec = new SpeechRec();
+          rec.lang = "en-US";
+          rec.interimResults = false;
+          rec.maxAlternatives = 1;
+
+          rec.onstart = () => {
+            state.isRecording = true;
+            document.getElementById("mic-icon")?.classList.add("text-rose-600", "animate-pulse");
+          };
+
+          rec.onresult = (evt) => {
+            const transcript = evt.results[0][0].transcript;
+            const inputField = document.getElementById("chat-text-input");
+            if (inputField) {
+              inputField.value = transcript;
+              inputField.focus();
+            }
+          };
+
+          rec.onerror = () => {
+            state.isRecording = false;
+            document.getElementById("mic-icon")?.classList.remove("text-rose-600", "animate-pulse");
+          };
+
+          rec.onend = () => {
+            state.isRecording = false;
+            document.getElementById("mic-icon")?.classList.remove("text-rose-600", "animate-pulse");
+          };
+
+          rec.start();
+        });
+
+        // Handle text submission
+        document.getElementById("chat-input-form")?.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const txtIn = document.getElementById("chat-text-input");
+          const msg = txtIn?.value || "";
+          if (!msg.trim()) return;
+
+          txtIn.value = "";
+          try {
+            // Append student
+            chatHistory.push({ role: "student", message: msg, createdAt: new Date().toISOString() });
+            renderMessages();
+
+            // Show typing indicator
+            const typingInd = document.createElement("div");
+            typingInd.id = "temp-typing-loader";
+            typingInd.className = "flex justify-start fade-in";
+            typingInd.innerHTML = `
+              <div class="bg-white border border-slate-100 rounded-2xl px-4 py-3 text-xs text-slate-500 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-ping"></span> ZeriqAI is writing...
+              </div>
+            `;
+            chatContainer?.appendChild(typingInd);
+            chatContainer?.scrollTo({ top: chatContainer.scrollHeight, behavior: "smooth" });
+
+            const apiRes = await apiClient.sendChatMessage(msg, state.activeCourse.id, state.user?.preferredAiMode || "Text");
+            typingInd.remove();
+
+            chatHistory.push(apiRes.response);
+            renderMessages();
+
+            if (state.user?.preferredAiMode === "Voice") {
+              playPcmSpeech(apiRes.audioBase64 || "", apiRes.response.message);
+            }
+          } catch (err) {
+            document.getElementById("temp-typing-loader")?.remove();
+            alert("Tutor chat transaction failed.");
+          }
+        });
+
+        // Stop TTS
+        document.getElementById("btn-tts-stop")?.addEventListener("click", () => {
+          if (state.activeAudio) {
+            try {
+              state.activeAudio.pause();
+            } catch (_) {}
+            state.activeAudio = null;
+          }
+          if (window.speechSynthesis) {
+            try {
+              window.speechSynthesis.cancel();
+            } catch (_) {}
+          }
+          document.getElementById("tts-playing-bar")?.classList.add("hidden");
+          document.getElementById("tts-playing-bar")?.classList.remove("flex");
+        });
+      }
+
+      async function renderNotes(root) {
+        let notes = [];
+        try {
+          notes = await apiClient.getNotes();
+          state.notes = notes;
+        } catch (_) {}
+
+        const notesListHtml = notes.map(note => `
+          <div class="bg-white border border-slate-200/50 rounded-2xl p-5 hover:shadow-md transition-all space-y-4">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <h3 class="text-base font-bold text-slate-800 font-display">${note.title}</h3>
+                <span class="text-[10px] text-slate-400">Created: ${new Date(note.createdAt).toLocaleDateString()}</span>
+              </div>
+              <div class="flex items-center gap-1 shrink-0">
+                <button data-note-id="${note.id}" class="btn-summarize-note p-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg transition-colors cursor-pointer" title="AI Summary Card">
+                  <i data-lucide="sparkles" class="w-4 h-4"></i>
+                </button>
+                <button data-note-id="${note.id}" class="btn-delete-note p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-lg transition-colors cursor-pointer" title="Delete Note">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <p class="text-sm text-slate-600 whitespace-pre-wrap leading-relaxed">${note.content}</p>
+
+            ${note.summary ? `
+              <div class="bg-indigo-50/40 border border-indigo-100/30 rounded-xl p-4 space-y-1.5">
+                <span class="text-[10px] font-bold text-indigo-700 uppercase tracking-widest flex items-center gap-1">
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> AI Core Summary
+                </span>
+                <p class="text-xs text-indigo-900 leading-relaxed">${note.summary}</p>
+              </div>
+            ` : ""}
+          </div>
+        `).join("");
+
+        root.innerHTML = `
+          <div class="flex-1 max-w-5xl mx-auto px-4 py-8 w-full space-y-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h1 class="text-3xl font-extrabold tracking-tight text-slate-950 font-display">Notes Hub</h1>
+                <p class="text-sm text-slate-500">Your custom learning logs and smart AI-summarized insights</p>
+              </div>
+              <button id="btn-create-note-form" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow transition-all flex items-center gap-2 cursor-pointer">
+                <i data-lucide="plus" class="w-4 h-4"></i> Create Manual Note
+              </button>
+            </div>
+
+            <!-- New Note Dialog Space -->
+            <div id="new-note-container" class="hidden bg-white/70 border border-indigo-100 rounded-2xl p-6 shadow-sm max-w-xl space-y-4">
+              <h3 class="text-base font-bold text-slate-900 font-display">Create Study Note</h3>
+              <div class="space-y-3">
+                <input type="text" id="note-input-title" placeholder="Topic title..." class="w-full bg-white border border-slate-200/60 rounded-xl py-2 px-3 text-sm focus:outline-none focus:border-indigo-500">
+                <textarea id="note-input-content" placeholder="Type your thoughts, study targets, or copy sample formulas here..." class="w-full h-32 bg-white border border-slate-200/60 rounded-xl p-3 text-sm focus:outline-none focus:border-indigo-500"></textarea>
+                <div class="flex justify-end gap-2">
+                  <button id="btn-cancel-note" class="px-3 py-1.5 border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-semibold text-slate-600 cursor-pointer">Cancel</button>
+                  <button id="btn-save-note-action" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow cursor-pointer">Save Note</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              ${notesListHtml || `
+                <div class="col-span-2 text-center py-12 text-slate-400 flex flex-col items-center justify-center space-y-2">
+                  <i data-lucide="file-text" class="w-10 h-10 text-slate-300"></i>
+                  <p class="text-sm font-medium">No notes available yet</p>
+                  <p class="text-xs text-slate-400">Notes from code practices and custom logs will accumulate here.</p>
+                </div>
+              `}
+            </div>
+          </div>
+        `;
+
+        document.getElementById("btn-create-note-form")?.addEventListener("click", () => {
+          document.getElementById("new-note-container")?.classList.toggle("hidden");
+        });
+
+        document.getElementById("btn-cancel-note")?.addEventListener("click", () => {
+          document.getElementById("new-note-container")?.classList.add("hidden");
+        });
+
+        document.getElementById("btn-save-note-action")?.addEventListener("click", async () => {
+          const title = document.getElementById("note-input-title")?.value || "";
+          const content = document.getElementById("note-input-content")?.value || "";
+          if (!title.trim() || !content.trim()) return;
+
+          try {
+            await apiClient.createNote(title, content);
+            alert("Note saved successfully.");
+            navigateTo("notes");
+          } catch (_) {
+            alert("Failed to catalog note.");
+          }
+        });
+
+        // Action bindings
+        document.querySelectorAll(".btn-delete-note").forEach(btn => {
+          btn.addEventListener("click", async (e) => {
+            const noteId = Number(e.currentTarget.getAttribute("data-note-id"));
+            if (!confirm("Are you sure you want to delete this study note?")) return;
+            try {
+              await apiClient.deleteNote(noteId);
+              navigateTo("notes");
+            } catch (_) {
+              alert("Error deleting notes record.");
+            }
+          });
+        });
+
+        document.querySelectorAll(".btn-summarize-note").forEach(btn => {
+          btn.addEventListener("click", async (e) => {
+            const noteId = Number(e.currentTarget.getAttribute("data-note-id"));
+            try {
+              e.currentTarget.disabled = true;
+              e.currentTarget.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>`;
+              lucide.createIcons();
+              
+              await apiClient.AIsummarizeNote(noteId);
+              navigateTo("notes");
+            } catch (_) {
+              alert("AI summarizing engine returned an error.");
+              navigateTo("notes");
+            }
+          });
+        });
+      }
+
+      async function renderProgress(root) {
+        let stats = [];
+        let quizResults = [];
+        try {
+          stats = await apiClient.getProgress();
+          quizResults = await apiClient.getQuizResults();
+          state.progressList = stats;
+          state.quizResults = quizResults;
+        } catch (_) {}
+
+        // Calculate hours from study seconds
+        const totalSec = stats.reduce((acc, curr) => acc + (curr.studyTimeSeconds || 0), 0);
+        const mins = Math.floor(totalSec / 60);
+        const completedMilestones = stats.filter(s => s.completed).length;
+
+        // Quiz items html
+        const quizResultsHtml = quizResults.map(res => `
+          <div class="bg-white/50 border border-slate-200/40 p-4 rounded-xl flex items-center justify-between">
+            <div class="space-y-1">
+              <h4 class="text-xs font-bold text-slate-800">Quiz ID: #${res.quizId}</h4>
+              <p class="text-[10px] text-slate-500">Submitted: ${new Date(res.createdAt).toLocaleDateString()}</p>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-2.5 py-1 text-[10px] font-bold ${res.isCorrect ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'} rounded-full">
+                ${res.isCorrect ? "Correct" : "Incorrect"}
+              </span>
+            </div>
+          </div>
+        `).join("");
+
+        root.innerHTML = `
+          <div class="flex-1 max-w-5xl mx-auto px-4 py-8 w-full space-y-8">
+            <div>
+              <h1 class="text-3xl font-extrabold tracking-tight text-slate-950 font-display">Academic Progress</h1>
+              <p class="text-sm text-slate-500">Track study metrics, hours consumed, and quiz results</p>
+            </div>
+
+            <!-- Stats Overview Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div class="bg-white/60 border border-slate-200/40 p-5 rounded-2xl shadow-sm space-y-1">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Completed Lessons</span>
+                <p class="text-3xl font-black text-indigo-600 font-display">${completedMilestones}</p>
+              </div>
+              <div class="bg-white/60 border border-slate-200/40 p-5 rounded-2xl shadow-sm space-y-1">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Study Time</span>
+                <p class="text-3xl font-black text-indigo-600 font-display">${mins} <span class="text-sm font-bold text-slate-500">minutes</span></p>
+              </div>
+              <div class="bg-white/60 border border-slate-200/40 p-5 rounded-2xl shadow-sm space-y-1">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Quizzes Attempted</span>
+                <p class="text-3xl font-black text-indigo-600 font-display">${quizResults.length}</p>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <h3 class="text-lg font-bold text-slate-900 font-display">Quiz Performance Log</h3>
+              <div class="grid grid-cols-1 gap-3">
+                ${quizResultsHtml || "<p class='text-xs text-slate-400'>No quizzes attempted yet.</p>"}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // ----------------- PREFERENCES MODAL MANAGEMENT -----------------
+      function showPreferencesModal() {
+        const modal = document.getElementById("preferences-modal");
+        const select = document.getElementById("pref-course");
+        if (select) {
+          select.innerHTML = state.courses.map(c => `
+            <option value="${c.id}" ${state.activeCourse?.id === c.id ? 'selected' : ''}>${c.title}</option>
+          `).join("");
+        }
+        modal?.classList.remove("hidden");
+      }
+
+      // ----------------- INITIALIZATION & GLOBAL HANDLERS -----------------
+      async function bootstrap() {
+        try {
+          // Attempt profile read
+          await apiClient.getProfile();
+          state.courses = await apiClient.getCourses();
+          navigateTo("dashboard");
+        } catch (_) {
+          // Fallback to home/login
+          navigateTo("home");
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        bootstrap();
+
+        // Nav click handlers
+        document.getElementById("link-home")?.addEventListener("click", (e) => { e.preventDefault(); navigateTo("home"); });
+        document.getElementById("link-courses")?.addEventListener("click", (e) => { e.preventDefault(); navigateTo("dashboard"); });
+        document.getElementById("link-tutor")?.addEventListener("click", (e) => { e.preventDefault(); navigateTo("course"); });
+        document.getElementById("link-notes")?.addEventListener("click", (e) => { e.preventDefault(); navigateTo("notes"); });
+        document.getElementById("link-progress")?.addEventListener("click", (e) => { e.preventDefault(); navigateTo("progress"); });
+        document.getElementById("btn-nav-action")?.addEventListener("click", () => navigateTo("login"));
+        
+        document.getElementById("btn-logout")?.addEventListener("click", () => {
+          state.user = null;
+          state.activeCourse = null;
+          state.activeLesson = null;
+          navigateTo("home");
+        });
+
+        // Preference modal actions
+        document.getElementById("btn-close-pref-modal")?.addEventListener("click", () => {
+          document.getElementById("preferences-modal")?.classList.add("hidden");
+        });
+
+        document.getElementById("preferences-form")?.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const courseId = Number(document.getElementById("pref-course")?.value);
+          const difficulty = document.querySelector("input[name='difficulty']:checked")?.value || "Beginner";
+          const aiMode = document.querySelector("input[name='ai-mode']:checked")?.value || "Text";
+
+          try {
+            const updatedUser = await apiClient.savePreferences(courseId, difficulty, aiMode);
+            state.user = updatedUser;
+            state.activeCourse = state.courses.find(c => c.id === courseId);
+            
+            document.getElementById("preferences-modal")?.classList.add("hidden");
+            alert("Study targets and AI parameters updated successfully!");
+            navigateTo("course");
+          } catch (_) {
+            alert("Error altering preferences.");
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

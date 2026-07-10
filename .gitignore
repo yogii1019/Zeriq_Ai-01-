@@ -1,0 +1,14 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+assets/.aistudio/
+zeriq_db.json
+*.local
+*.cjs
+.tsx-cache
+.tsx-cache/
