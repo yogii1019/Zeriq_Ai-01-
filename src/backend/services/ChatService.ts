@@ -79,7 +79,7 @@ Your absolute mission is to TEACH, not just give direct answers. Follow these pe
       const ai = getGeminiClient();
       const aiResponse = await ai.models.generateContent({
         model: "gemini-3.5-flash",
-        contents: message, // Or full structured contents for multi-turn
+        contents,
         config: {
           systemInstruction,
           temperature: 0.7,

@@ -304,7 +304,8 @@ function setupNavigation() {
       
       navigate("course");
     } catch (err) {
-      alert("Failed to save study preferences.");
+      console.error("Failed to save study preferences:", err);
+      alert("Failed to save study preferences. Please log in again and retry.");
     } finally {
       showModalLoading(false);
     }

@@ -7,14 +7,12 @@ let aiClient: GoogleGenAI | null = null;
 
 export function getGeminiClient(): GoogleGenAI {
   if (!aiClient) {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY?.trim();
     if (!apiKey) {
-      console.warn("WARNING: GEMINI_API_KEY environment variable is not defined in Secrets or .env file.");
+      throw new Error("GEMINI_API_KEY is not configured. Add it to Render Environment Variables and redeploy.");
     }
-    // Note: If apiKey is undefined, the SDK might still try to read from PROCESS.ENV.GEMINI_API_KEY internally,
-    // but initializing with process.env.GEMINI_API_KEY provides optimal clarity and structure.
     aiClient = new GoogleGenAI({
-      apiKey: apiKey || "",
+      apiKey,
       httpOptions: {
         headers: {
           "User-Agent": "aistudio-build",

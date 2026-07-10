@@ -7,7 +7,12 @@ export const userExtractor = (req: Request, res: Response, next: () => void) => 
     res.status(401).json({ error: "Unauthorized. Missing User ID header." });
     return;
   }
-  req.userId = Number(userId);
+  const parsedUserId = Number(userId);
+  if (!Number.isInteger(parsedUserId) || parsedUserId <= 0) {
+    res.status(401).json({ error: "Unauthorized. Invalid User ID header." });
+    return;
+  }
+  req.userId = parsedUserId;
   next();
 };
 
@@ -32,7 +37,8 @@ export class UserController {
 
   private login(req: Request, res: Response): void {
     try {
-      const { username, email } = req.body;
+      const username = String(req.body.username || "").trim();
+      const email = String(req.body.email || "").trim();
       if (!username || !email) {
         res.status(400).json({ error: "Username and email are required." });
         return;
@@ -73,6 +79,10 @@ export class UserController {
       );
       res.json(updatedUser);
     } catch (e: any) {
+      if (e.message === "User not found.") {
+        res.status(404).json({ error: e.message });
+        return;
+      }
       res.status(500).json({ error: e.message });
     }
   }

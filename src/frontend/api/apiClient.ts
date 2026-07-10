@@ -90,13 +90,20 @@ export interface Resource {
 }
 
 class ApiClient {
-  private getUserId(): string | null {
+  private getStoredUser(): User | null {
     const userJson = localStorage.getItem("zeriq_user");
-    if (userJson) {
-      const u = JSON.parse(userJson);
-      return u.id ? String(u.id) : null;
+    if (!userJson) return null;
+    try {
+      return JSON.parse(userJson) as User;
+    } catch {
+      localStorage.removeItem("zeriq_user");
+      return null;
     }
-    return null;
+  }
+
+  private getUserId(): string | null {
+    const user = this.getStoredUser();
+    return user?.id ? String(user.id) : null;
   }
 
   private getHeaders(): HeadersInit {
@@ -131,11 +138,25 @@ class ApiClient {
   }
 
   public async savePreferences(courseId: number, difficulty: string, preferredAiMode: string, preferredVoice?: string): Promise<User> {
-    const res = await fetch("/api/users/preferences", {
+    const payload = { courseId, difficulty, preferredAiMode, preferredVoice };
+    let res = await fetch("/api/users/preferences", {
       method: "POST",
       headers: this.getHeaders(),
-      body: JSON.stringify({ courseId, difficulty, preferredAiMode, preferredVoice }),
+      body: JSON.stringify(payload),
     });
+
+    if (res.status === 401 || res.status === 404 || res.status === 500) {
+      const storedUser = this.getStoredUser();
+      if (storedUser?.username && storedUser?.email) {
+        await this.login(storedUser.username, storedUser.email);
+        res = await fetch("/api/users/preferences", {
+          method: "POST",
+          headers: this.getHeaders(),
+          body: JSON.stringify(payload),
+        });
+      }
+    }
+
     if (!res.ok) throw new Error(await res.text());
     const user = await res.json();
     localStorage.setItem("zeriq_user", JSON.stringify(user));
