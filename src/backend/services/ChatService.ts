@@ -79,7 +79,7 @@ Your absolute mission is to TEACH, not just give direct answers. Follow these pe
       const ai = getGeminiClient();
       const aiResponse = await ai.models.generateContent({
         model: "gemini-3.5-flash",
-        contents,
+        contents: contents, // Full structured contents with conversation history
         config: {
           systemInstruction,
           temperature: 0.7,
@@ -88,6 +88,10 @@ Your absolute mission is to TEACH, not just give direct answers. Follow these pe
       replyText = aiResponse.text || "I was unable to formulate an explanation. Could you please rephrase your request?";
     } catch (err) {
       console.error("Gemini Chat Error:", err);
+      const isDev = process.env.NODE_ENV !== "production";
+      const errorDetail = isDev && err instanceof Error
+        ? `\n\n---\n**(Dev mode only) Real error:** \`${err.message}\``
+        : "";
       replyText = `### AI Tutor (Offline Fallback)
 Hello! It seems I'm operating in offline mode right now. Let me help you with **"${message}"** based on standard Computer Science principles:
 
@@ -95,7 +99,7 @@ Hello! It seems I'm operating in offline mode right now. Let me help you with **
 - **Step 2: Break It Down**: Solve a smaller version of the problem first.
 - **Step 3: Test Corner Cases**: What happens if input is empty or negative?
 
-*Tip: Please ensure a valid Gemini API key is configured in your platform Secrets to get real-time dynamic tutoring.*`;
+*Tip: Please ensure a valid Gemini API key is configured in your platform Secrets to get real-time dynamic tutoring.*${errorDetail}`;
     }
 
     // Save AI response
