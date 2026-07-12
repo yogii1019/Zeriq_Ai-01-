@@ -304,8 +304,7 @@ function setupNavigation() {
       
       navigate("course");
     } catch (err) {
-      console.error("Failed to save study preferences:", err);
-      alert("Failed to save study preferences. Please log in again and retry.");
+      alert("Failed to save study preferences.");
     } finally {
       showModalLoading(false);
     }
@@ -1740,6 +1739,47 @@ function speakWithWebSpeech(text: string) {
   }
 }
 
+// Wrap Gemini's raw, headerless 16-bit PCM audio (mono, 24kHz) in a proper
+// WAV header so the browser can actually decode and play it. Gemini's TTS
+// API returns bare PCM samples — it does NOT return AAC, MP3, or a complete
+// WAV file — so without this header, no browser <audio> element can play it.
+function pcmBase64ToWavUrl(base64Audio: string, sampleRate = 24000): string {
+  const binary = atob(base64Audio);
+  const pcmLength = binary.length;
+  const pcmBytes = new Uint8Array(pcmLength);
+  for (let i = 0; i < pcmLength; i++) {
+    pcmBytes[i] = binary.charCodeAt(i);
+  }
+
+  const numChannels = 1;
+  const bitsPerSample = 16;
+  const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+  const blockAlign = numChannels * (bitsPerSample / 8);
+
+  const header = new ArrayBuffer(44);
+  const view = new DataView(header);
+  const writeString = (offset: number, str: string) => {
+    for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+  };
+
+  writeString(0, "RIFF");
+  view.setUint32(4, 36 + pcmLength, true);
+  writeString(8, "WAVE");
+  writeString(12, "fmt ");
+  view.setUint32(16, 16, true); // PCM fmt chunk size
+  view.setUint16(20, 1, true); // audio format: 1 = PCM
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, bitsPerSample, true);
+  writeString(36, "data");
+  view.setUint32(40, pcmLength, true);
+
+  const wavBlob = new Blob([header, pcmBytes], { type: "audio/wav" });
+  return URL.createObjectURL(wavBlob);
+}
+
 // Play synthesized TTS PCM speech
 function playPcmSpeech(base64Audio: string, textToSpeak?: string) {
   // Always stop any ongoing SpeechSynthesis first
@@ -1770,15 +1810,8 @@ function playPcmSpeech(base64Audio: string, textToSpeak?: string) {
   }
 
   try {
-    // Try multiple formats in case of differing browser compatibility or API codecs (AAC, MP3, WAV)
-    const formats = [
-      `data:audio/aac;base64,${base64Audio}`,
-      `data:audio/mp3;base64,${base64Audio}`,
-      `data:audio/wav;base64,${base64Audio}`
-    ];
-
-    let currentFormatIndex = 0;
-    const audio = new Audio();
+    const wavUrl = pcmBase64ToWavUrl(base64Audio);
+    const audio = new Audio(wavUrl);
     state.activeAudio = audio;
 
     playBar?.classList.remove("hidden");
@@ -1788,38 +1821,22 @@ function playPcmSpeech(base64Audio: string, textToSpeak?: string) {
       textModeIndicator.textContent = "AI Speech";
     }
 
-    const tryNextFormatOrFallback = () => {
-      currentFormatIndex++;
-      if (currentFormatIndex < formats.length) {
-        console.log(`Trying audio format index ${currentFormatIndex}...`);
-        audio.src = formats[currentFormatIndex];
-        const playPromise = audio.play();
-        if (playPromise !== undefined) {
-          playPromise.catch((playErr) => {
-            console.warn(`Audio play promise failed for format index ${currentFormatIndex}:`, playErr);
-            tryNextFormatOrFallback();
-          });
-        }
+    audio.onerror = (e) => {
+      console.warn("WAV playback failed, falling back to Web Speech Synthesis:", e);
+      URL.revokeObjectURL(wavUrl);
+      if (textToSpeak) {
+        speakWithWebSpeech(textToSpeak);
       } else {
-        console.warn("All base64 audio containers failed or are unsupported. Falling back to browser SpeechSynthesis.");
-        if (textToSpeak) {
-          speakWithWebSpeech(textToSpeak);
-        } else {
-          playBar?.classList.add("hidden");
-          playBar?.classList.remove("flex");
-          if (state.activeAudio === audio) {
-            state.activeAudio = null;
-          }
-        }
+        playBar?.classList.add("hidden");
+        playBar?.classList.remove("flex");
+      }
+      if (state.activeAudio === audio) {
+        state.activeAudio = null;
       }
     };
 
-    audio.onerror = (e) => {
-      console.warn(`Audio loading error for format index ${currentFormatIndex}:`, e);
-      tryNextFormatOrFallback();
-    };
-
     audio.onended = () => {
+      URL.revokeObjectURL(wavUrl);
       playBar?.classList.add("hidden");
       playBar?.classList.remove("flex");
       if (state.activeAudio === audio) {
@@ -1827,21 +1844,20 @@ function playPcmSpeech(base64Audio: string, textToSpeak?: string) {
       }
     };
 
-    // Begin trying formats starting with native AAC
-    audio.src = formats[currentFormatIndex];
-
-    const mimeToCheck = currentFormatIndex === 0 ? "audio/aac" : (currentFormatIndex === 1 ? "audio/mpeg" : "audio/wav");
-    if (audio.canPlayType && audio.canPlayType(mimeToCheck) === "") {
-      console.warn(`Browser reports MIME type ${mimeToCheck} is unsupported, skipping directly.`);
-      tryNextFormatOrFallback();
-      return;
-    }
-
     const playPromise = audio.play();
     if (playPromise !== undefined) {
       playPromise.catch((err) => {
-        console.warn("Primary audio format play promise failed:", err);
-        tryNextFormatOrFallback();
+        console.warn("Audio play promise failed, falling back to Web Speech Synthesis:", err);
+        URL.revokeObjectURL(wavUrl);
+        if (textToSpeak) {
+          speakWithWebSpeech(textToSpeak);
+        } else {
+          playBar?.classList.add("hidden");
+          playBar?.classList.remove("flex");
+        }
+        if (state.activeAudio === audio) {
+          state.activeAudio = null;
+        }
       });
     }
   } catch (err) {
