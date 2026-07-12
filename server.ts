@@ -10,7 +10,8 @@ import { NoteController } from "./src/backend/controllers/NoteController";
 import { ChatController } from "./src/backend/controllers/ChatController";
 import { ProgressController } from "./src/backend/controllers/ProgressController";
 
-dotenv.config();
+dotenv.config({ path: ".env.local" });
+dotenv.config(); // fallback: also load .env if present, without overriding already-set vars
 
 async function startServer() {
   const app = express();
